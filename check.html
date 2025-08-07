@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Streaming Tutorial Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      background-color: #f8f9fa;
+    }
+    input, button {
+      padding: 0.5rem;
+      margin-right: 0.5rem;
+      width: 400px;
+    }
+    #log {
+      white-space: pre-wrap;
+      background-color: #000;
+      color: #0f0;
+      padding: 1rem;
+      margin-top: 1rem;
+      height: 400px;
+      overflow-y: scroll;
+      border-radius: 5px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <h2>📚 Generate Tutorial with Streaming Logs</h2>
+  <input type="text" id="repoInput" placeholder="Enter GitHub repo URL..." />
+  <button onclick="startStream()">Start</button>
+
+  <div id="log">Logs will appear here...</div>
+
+  <script>
+    let evtSource;
+
+    function startStream() {
+      const repoUrl = document.getElementById("repoInput").value;
+      const logDiv = document.getElementById("log");
+      logDiv.textContent = "Starting stream...\n";
+
+      if (evtSource) {
+        evtSource.close(); // close any existing connection
+      }
+
+      fetch("http://localhost:8000/tutorial/generate-stream", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ repo_url: repoUrl })
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+
+        function read() {
+          reader.read().then(({ done, value }) => {
+            if (done) {
+              logDiv.textContent += "\nStream complete.";
+              return;
+            }
+            const chunk = decoder.decode(value, { stream: true });
+            chunk.split("data: ").forEach(line => {
+              if (line.trim()) {
+                logDiv.textContent += line.trim() + "\n";
+                logDiv.scrollTop = logDiv.scrollHeight; // auto-scroll
+              }
+            });
+            read();
+          });
+        }
+
+        read();
+      })
+      .catch(error => {
+        logDiv.textContent += "\nError: " + error.message;
+      });
+    }
+  </script>
+
+</body>
+</html>
