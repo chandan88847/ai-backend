@@ -82,8 +82,8 @@ async def run_pipeline_streaming(repo_url: str) -> AsyncGenerator[str, None]:
     logger.propagate = False
 
     shared = {
-        "repo_url": repo_url_val,
-        "local_dir": local_dir_val,
+        "repo_url": repo_url,
+        "local_dir": None,
         "project_name": repo_name,
         "output_dir": output_dir,
         "include_patterns": DEFAULT_INCLUDE_PATTERNS,
