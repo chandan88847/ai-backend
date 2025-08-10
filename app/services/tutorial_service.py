@@ -81,9 +81,12 @@ async def run_pipeline_streaming(repo_url: str) -> AsyncGenerator[str, None]:
     logger.addHandler(handler)
     logger.propagate = False
 
+    is_git_url = '.git' in repo_url or 'github.com' in repo_url
+    repo_url_val = repo_url if is_git_url else None
+    local_dir_val = None if is_git_url else repo_url
     shared = {
-        "repo_url": repo_url,
-        "local_dir": None,
+        "repo_url": repo_url_val,  # use the argument directly
+        "local_dir": local_dir_val,
         "project_name": repo_name,
         "output_dir": output_dir,
         "include_patterns": DEFAULT_INCLUDE_PATTERNS,
