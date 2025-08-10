@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routers import tutorial  # , query
-from app.api.routers import query_router
+from app.api.routers import tutorial,query_router  # , query
+#from app.api.routers import query_router
 
 app = FastAPI(title="KT Assistant")
 
@@ -14,6 +14,12 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers (Authorization, Content-Type, etc.)
 )
 
+# === ADD THIS NEW ENDPOINT ===
+@app.get("/")
+def read_root():
+    """A simple endpoint to confirm the API is running."""
+    return {"status": "ok", "message": "KT Assistant API is running!"}
+# =============================
 # Register your API routers
 app.include_router(tutorial.router)
 app.include_router(query_router.router)
